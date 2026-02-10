@@ -1,0 +1,1 @@
+window.backendURL = window.backendURL || 'http://localhost:5000';

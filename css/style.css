@@ -1,0 +1,36 @@
+body {
+  font-family: 'Segoe UI', sans-serif;
+  background:
+    linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
+    url("../images/background image.jpg") center/cover no-repeat fixed;
+  min-height: 100vh;
+}
+
+.navbar {
+  background: #0b0f1a;
+  border-bottom: 3px solid #ff6a00;
+}
+
+.navbar-brand img {
+  height: 40px;
+}
+
+.card, .dashboard-card {
+  background: rgba(255,255,255,0.95);
+  border-radius: 18px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.25);
+}
+
+.table th {
+  background: #0b0f1a !important;
+  color: white;
+}
+
+.badge.pending { background: #ffc107; }
+.badge.in_progress { background: #0dcaf0; }
+.badge.completed { background: #198754; }
+
+.btn-orange {
+  background: #ff6a00;
+  color: white;
+}
