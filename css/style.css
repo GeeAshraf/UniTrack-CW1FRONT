@@ -1,18 +1,33 @@
 body {
   font-family: 'Segoe UI', sans-serif;
   background:
-    linear-gradient(rgba(0,0,0,0.6), rgba(0,0,0,0.6)),
-    url("../images/background image.jpg") center/cover no-repeat fixed;
+    linear-gradient(rgba(0,0,0,0.5), rgba(0,0,0,0.5)),
+    url("../images/background%20image.jpg") center/cover no-repeat fixed;
   min-height: 100vh;
 }
 
-.navbar {
-  background: #0b0f1a;
+ .navbar {
+  background: #ffffff;
   border-bottom: 3px solid #ff6a00;
 }
 
 .navbar-brand img {
-  height: 40px;
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+  vertical-align: middle;
+}
+
+.navbar-right-logo {
+  height: 60px;
+  width: auto;
+  object-fit: contain;
+}
+
+.logo-img {
+  height: 48px;
+  width: auto;
+  object-fit: contain;
 }
 
 .card, .dashboard-card {
