@@ -68,3 +68,4 @@ window.login = login;
 window.signup = signup;
 window.checkAuth = checkAuth;
 window.logout = logout;
+ 
