@@ -1,49 +1,10 @@
 const backendURL = "http://localhost:5000";
 
-let techniciansList = [];
-let editRequestId = null;
-
-async function loadTechnicians() {
-    try {
-       
-        let res = await fetch(`http://localhost:5000/technicians`, { credentials: "include" });
-
-        if (!res.ok) {
-            res = await fetch(`http://localhost:5000/users?role=technician`, { credentials: "include" });
-        }
-        
-        if (!res.ok) {
-            res = await fetch(`http://localhost:5000/users`, { credentials: "include" });
-        }
-
-        const data = await res.json().catch(() => ({}));
-        const users = data.data || data.users || data || [];
-
-        techniciansList = Array.isArray(users)
-            ? users.filter(u => (u.role || "").toLowerCase().includes("tech"))
-            : [];
-
-        if (techniciansList.length === 0 && Array.isArray(users)) {
-            techniciansList = users;
-        }
-    } catch (e) {
-        console.error("loadTechnicians error:", e);
-        techniciansList = [];
-    }
-}
-
 async function loadAdminRequests() {
-    const table = document.querySelector("#requestsTable");
-
+    const table = document.querySelector("#requestsTable tbody");
     const res = await fetch(`http://localhost:5000/requests`, { credentials: "include" });
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-        alert(data.error || "Cannot fetch requests");
-        return;
-    }
-
-    const requests = data.data || [];
+    const data = await res.json();
+    if (!res.ok) return alert(data.error || "Cannot fetch requests");
 
     table.innerHTML = "";
     requests.forEach(r => {
@@ -66,78 +27,24 @@ async function loadAdminRequests() {
 }
 
 async function editRequest(id) {
-    editRequestId = id;
+    const newTech = prompt("Enter technician ID to assign:");
+    if (!newTech) return;
 
-    const select = document.getElementById("technicianSelect");
-    const manualInput = document.getElementById("technicianIdManual");
-
-    if (manualInput) manualInput.value = "";
-
-    select.innerHTML = '<option value="">-- Choose a technician --</option>';
-
-    techniciansList.forEach(t => {
-        const name = t.name || t.username || t.email || `User #${t.id}`;
-        select.innerHTML += `<option value="${t.id}">${name}</option>`;
-    });
-
-    const modal = new bootstrap.Modal(document.getElementById("assignTechModal"));
-    modal.show();
-}
-
-async function doAssignTechnician(requestId, techId) {
-    const body = JSON.stringify({ technician_id: Number(techId) });
-
-    // Try PATCH /requests/:id first
-    let res = await fetch(`http://localhost:5000/requests/${requestId}`, {
-        method: "PATCH",
+    const res = await fetch(`http://localhost:5000/requests/${id}`, {
+        method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body
+        body: JSON.stringify({ technician_id: newTech })
     });
-
-    if (res.status === 404) {
-        console.warn("PATCH /requests/:id returned 404, retrying with PUT");
-        res = await fetch(`http://localhost:5000/requests/${requestId}`, {
-            method: "PUT",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body
-        });
-    }
-
-    const data = await res.json().catch(() => ({}));
-
-    if (!res.ok) {
-        console.error("Assign technician failed:", res.status, data);
-        throw new Error(data.error || data.message || `Assign failed (${res.status})`);
-    }
-
-    await loadAdminRequests();
-}
-
-async function confirmAssignTechnician() {
-    const techId =
-        document.getElementById("technicianSelect")?.value?.trim() ||
-        document.getElementById("technicianIdManual")?.value?.trim();
-
-    if (!techId || !editRequestId) {
-        alert("Please select a technician or enter an ID.");
-        return;
-    }
-
-    try {
-        await doAssignTechnician(editRequestId, techId);
-        bootstrap.Modal.getInstance(document.getElementById("assignTechModal"))?.hide();
-        editRequestId = null;
-    } catch (err) {
-        alert(err.message || "Assign failed.");
-    }
+    const data = await res.json();
+    if (!res.ok) return alert(data.error || "Update failed");
+    loadAdminRequests();
 }
 
 async function deleteRequest(id) {
     if (!confirm("Are you sure you want to delete this request?")) return;
 
-    const res = await fetch(`http://localhost:5000/requests/${id}`, {
+    const res = await fetch(`${backendURL}/requests/${id}`, {
         method: "DELETE",
         credentials: "include"
     });
@@ -153,12 +60,8 @@ async function deleteRequest(id) {
 }
 
 async function checkAdminAuth() {
-    const res = await fetch(`http://localhost:5000/auth/me`, { credentials: "include" });
-
-    if (!res.ok) {
-        window.location.href = "login.html";
-        return false;
-    }
+    const res = await fetch(`http://localhost:5000/me`, { credentials: "include" });
+    if (!res.ok) return window.location.href = "login.html";
 
     const data = await res.json().catch(() => ({}));
     const role = (data?.data?.role || "").toLowerCase();
@@ -173,10 +76,7 @@ async function checkAdminAuth() {
 }
 
 async function logout() {
-    await fetch(`http://localhost:5000/auth/logout`, {
-        method: "POST",
-        credentials: "include"
-    });
+    await fetch(`http://localhost:5000/auth/logout`, { method: "POST", credentials: "include" });
     window.location.href = "login.html";
 }
 
